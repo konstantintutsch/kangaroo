@@ -12,3 +12,7 @@ Directory .
 - main.c: 123
 Total lines of code: 128
 ```
+
+**loc** also supports:
+- multiple directories
+- multiple languages
