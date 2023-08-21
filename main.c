@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <errno.h>
 
 #define MAX_ARRAY_LENGTH 16
 #define MAX_FILEEXT_LENGTH 8
@@ -93,27 +94,43 @@ int main (int   argc,
   {
     if (dirs[dir][0] != 0)
     {
-      printf ("Directory %s\n", dirs[dir]);
+      printf ("Directory %s", dirs[dir]);
       
       directory = opendir (dirs[dir]);
 
       if (directory != NULL)
       {
+        printf ("\n");
+
         while ((ep = readdir (directory)) != NULL)
         {
           if (endswith (ep->d_name, langs))
           {
             sprintf (file_path, "%s/%s", dirs[dir], ep->d_name);
+            printf ("- %s: ", ep->d_name);
             file = fopen (file_path, "r");
-            while ((lread = getline (&buffer, &llen, file)) != -1)
-              file_lines++;
-            total_lines += file_lines;
-            fclose (file);
+            if (file == NULL)
+            {
+              printf ("%s\n", strerror (errno));
+              file_lines = 0;
+            }
+            else
+            {
+              while ((lread = getline (&buffer, &llen, file)) != -1)
+                file_lines++;
+              fclose (file);
 
-            printf ("- %s: %ld\n", ep->d_name, file_lines);
+              printf ("%ld\n", file_lines);
+            }
+
+            total_lines += file_lines;
             file_lines = 0;
           }
         }
+      }
+      else
+      {
+        printf (": %s\n", strerror (errno));
       }
     }
   }
