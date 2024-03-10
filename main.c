@@ -44,12 +44,12 @@ int directory_arguments = 0;
  * @return: 0 -> Success / 1 -> Failure
  */
 
-int cmp_extensions (char  *file_name,
-                    char **extensions)
+int cmp_extensions(char  *file_name,
+                   char **extensions)
 {
     for (int i = 0; i < extension_arguments; i++)
     {
-        if (strncmp (file_name + strlen(file_name) - strlen(extensions[i]), /* End of file_name minus extension length -> extension as string */
+        if (strncmp(file_name + strlen(file_name) - strlen(extensions[i]), /* End of file_name minus extension length -> extension as string */
                      extensions[i], /* Compare to actual extension */
                      strlen(extensions[i]) /* Only compare actual extension */) != 0)
             continue;
@@ -61,7 +61,7 @@ int cmp_extensions (char  *file_name,
 }
 
 /**
- * arg_value - Filter out the value from a command line argument 
+ * arg_value - Filter out the value from a command line argument
  *             e. g. `-d./src` -> `./src`
  *
  * @arg1: command line argument
@@ -81,7 +81,7 @@ char *arg_value(char *argument)
     char *value = malloc(strlen(argument));
 
     /* Write string to value, skip first two characters */
-    memcpy (value, argument + 2, strlen(argument));
+    memcpy(value, argument + 2, strlen(argument));
     /* End string */
     value[strlen(argument)] = 0;
 
@@ -129,7 +129,7 @@ int count_lines(char *path)
     int lines = 0;
 
     FILE *file;
-    char *buffer = malloc (file_size(path));
+    char *buffer = malloc(file_size(path));
     size_t llen = 0;
     ssize_t lread;
 
@@ -142,8 +142,8 @@ int count_lines(char *path)
 
     while ((lread = getline(&buffer, &llen, file)) != -1)
         lines++;
-                
-    fclose (file);
+
+    fclose(file);
     free(buffer);
     return (lines);
 }
@@ -154,11 +154,11 @@ int count_lines(char *path)
  * @return: 0 -> Success
  */
 
-int main (int   argc,
-          char *argv[])
+int main(int   argc,
+         char *argv[])
 {
     unsigned long total_lines = 0;
-   
+
     /**
      * Count argument types for dynamic assigning
      * extension_arguments and directory_arguments are definde globally -> access in every for loop
@@ -178,13 +178,13 @@ int main (int   argc,
     /* Dynamic assigning of arrays of strings */
     char **extensions;
 
-    extensions = malloc(extension_arguments * sizeof(char*)); /* allocate space for extension_arguments char* pointers*/
+    extensions = malloc(extension_arguments * sizeof(char *)); /* allocate space for extension_arguments char* pointers*/
     for (int i = 0; i < extension_arguments; i++)
         extensions[i] = malloc(EXT_LENGTH + 1); /* allocate space for EXT_LENGTH + '\0' */
 
     char **directories;
 
-    directories = malloc(directory_arguments * sizeof(char*));
+    directories = malloc(directory_arguments * sizeof(char *));
     for (int i = 0; i < directory_arguments; i++)
         directories[i] = malloc(DIR_LENGTH + 1);
 
@@ -219,12 +219,12 @@ int main (int   argc,
 
 
     /* List all recognized file types */
-    printf ("File extensions:");
+    printf("File extensions:");
 
     for (int i = 0; i < extension_arguments; i++)
-        printf (" %s", extensions[i]);
+        printf(" %s", extensions[i]);
 
-    printf ("\n");
+    printf("\n");
 
 
     for (int i = 0; i < directory_arguments; i++)
@@ -235,31 +235,31 @@ int main (int   argc,
         directory = opendir(directories[i]);
         if (directory == NULL)
         {
-            printf ("\nError opening directory %s: %s\n", directories[i], strerror(errno));
+            printf("\nError opening directory %s: %s\n", directories[i], strerror(errno));
             continue;
         }
 
-        printf ("\nDirectory %s\n", directories[i]);
+        printf("\nDirectory %s\n", directories[i]);
 
         while ((element = readdir(directory)) != NULL)
         {
-            if (cmp_extensions (element->d_name, extensions) != 0) /* files extension doesn't match */
+            if (cmp_extensions(element->d_name, extensions) != 0) /* files extension doesn't match */
                 continue;
 
             int lines;
             char path[DIR_LENGTH + BASE_LENGTH + EXT_LENGTH];
 
-            sprintf (path, "%s/%s", directories[i], element->d_name); /* merge directory path and whole file name */
+            sprintf(path, "%s/%s", directories[i], element->d_name); /* merge directory path and whole file name */
             lines = count_lines(path);
 
             if (lines == -1) /* could not get lines */
                 continue;
-            
-            printf ("- %s: %d\n", element->d_name, lines);
+
+            printf("- %s: %d\n", element->d_name, lines);
             total_lines += lines;
         }
     }
 
-    printf ("\nTotal lines of code: %ld\n", total_lines);
+    printf("\nTotal lines of code: %ld\n", total_lines);
     return (0);
 }
