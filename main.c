@@ -26,7 +26,9 @@
 #define MAX_DIRNAME_LENGTH 256
 
 /**
- * cmp_extensions - Checks if @arg1 ends with extension from array @arg2
+ * cmp_extensions - Checks if string ends with string from array of strings
+ * @arg1: string to check
+ * @arg2: valid extensions
  *
  * Return - 0 Success
  *          1 Failure
@@ -52,8 +54,9 @@ int cmp_extensions (char *file_name,
 }
 
 /**
- * arg_value - Filter out the value from @arg1 
+ * arg_value - Filter out the value from a command line argument 
  *             e. g. `-d./src` -> `./src`
+ * @arg1: command line argument
  *
  * Return - String
  */
@@ -75,6 +78,64 @@ char *arg_value(char *argument)
     value[strlen(argument)] = 0;
 
     return (value);
+}
+
+/**
+ * file_size - Get file size of file
+ * @arg1: file path
+ *
+ * Return - Long Int
+ */
+
+long int file_size(char *path)
+{
+    long int size;
+
+    FILE *file;
+
+    file = fopen(path, "r");
+    if (file == NULL)
+    {
+        printf("Error getting file size of %s: %s\n", path, strerror(errno));
+        return (0);
+    }
+
+    fseek(file, 0, SEEK_END);
+    size = ftell(file);
+
+    fclose(file);
+    return (size);
+}
+
+/**
+ * count_lines - Count how many lines a file has
+ * @arg1: file path
+ *
+ * Return - Int
+ */
+
+int count_lines(char *path)
+{
+    int lines = 0;
+
+    FILE *file;
+    char *buffer = malloc (file_size(path));
+    size_t llen = 0;
+    ssize_t lread;
+
+    file = fopen(path, "r");
+    if (file == NULL)
+    {
+        printf("Error opening file %s: %s\n", path, strerror(errno));
+        return (-1);
+    }
+
+    while ((lread = getline(&buffer, &llen, file)) != -1)
+        lines++;
+                
+    fclose (file);
+    free(buffer);
+    return (lines);
 }
 
 /**
@@ -154,41 +215,25 @@ int main (int   argc,
         }
 
         printf ("Directory %s\n", directories[i]);
-
         while ((element = readdir(directory)) != NULL)
         {
             if (cmp_extensions (element->d_name, extensions) != 0)
                 continue;
 
-            FILE *file;
-            char path[MAX_DIRNAME_LENGTH + 32 + MAX_FILEEXT_LENGTH];
-            char *buffer = NULL;
             int lines;
-            size_t llen = 0;
-            ssize_t lread;
-            
+            char path[MAX_DIRNAME_LENGTH + 32 + MAX_FILEEXT_LENGTH];
+
             sprintf (path, "%s/%s", directories[i], element->d_name); /* merge directory path and whole file name */
+            lines = count_lines(path);
+
+            if (lines == -1)
+                continue;
             
-            printf ("- %s: ", element->d_name);
-            file = fopen (path, "r");
-            if (file == NULL)
-            {
-                printf ("%s\n", strerror (errno));
-            }
-            else
-            {
-                while ((lread = getline (&buffer, &llen, file)) != -1)
-                    lines++;
-                
-                fclose (file);
-
-                printf ("%d\n", lines);
-            }
-
+            printf ("- %s: %d\n", element->d_name, lines);
             total_lines += lines;
         }
     }
-    printf ("Total lines of code: %ld\n", total_lines);
 
+    printf ("Total lines of code: %ld\n", total_lines);
     return (0);
 }
