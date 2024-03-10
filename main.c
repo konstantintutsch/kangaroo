@@ -1,16 +1,16 @@
 /**
  * Copyright (c) 2023-2024 Konstantin Tutsch.
- * 
- * This program is free software: you can redistribute it and/or modify  
- * it under the terms of the GNU General Public License as published by  
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, version 3.
  *
- * This program is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License 
+ * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
@@ -167,12 +167,12 @@ int main(int   argc,
     {
         switch (argv[i][1])
         {
-            case EXT_PREFIX:
-                extension_arguments++;
-                break;
-            case DIR_PREFIX:
-                directory_arguments++;
-                break;
+        case EXT_PREFIX:
+            extension_arguments++;
+            break;
+        case DIR_PREFIX:
+            directory_arguments++;
+            break;
         }
     }
     /* Dynamic assigning of arrays of strings */
@@ -202,16 +202,16 @@ int main(int   argc,
 
         switch (argv[i][1])
         {
-            case EXT_PREFIX:
-                strcpy(extensions[counter_exts], value_buffer);
-                counter_exts++;
-                break;
-            case DIR_PREFIX:
-                strcpy(directories[counter_dirs], value_buffer);
-                counter_dirs++;
-                break;
-            default:
-                printf("Unknown argument type '%c', skipping.\n", argv[i][1]);
+        case EXT_PREFIX:
+            strcpy(extensions[counter_exts], value_buffer);
+            counter_exts++;
+            break;
+        case DIR_PREFIX:
+            strcpy(directories[counter_dirs], value_buffer);
+            counter_dirs++;
+            break;
+        default:
+            printf("Unknown argument type '%c', skipping.\n", argv[i][1]);
         }
 
         free(value_buffer); /* free local variable from function arg_value() */
