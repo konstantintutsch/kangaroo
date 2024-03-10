@@ -14,6 +14,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -21,9 +22,18 @@
 #include <dirent.h>
 #include <errno.h>
 
-#define MAX_ARRAY_LENGTH 16
-#define MAX_FILEEXT_LENGTH 8
-#define MAX_DIRNAME_LENGTH 256
+
+#define EXT_PREFIX 'e'
+#define DIR_PREFIX 'd'
+
+#define BASE_LENGTH 64
+#define EXT_LENGTH 8
+#define DIR_LENGTH 256
+
+
+int e_arguments = 0;
+int d_arguments = 0;
+
 
 /**
  * cmp_extensions - Checks if string ends with string from array of strings
@@ -34,24 +44,24 @@
  *          1 Failure
  */
 
-int cmp_extensions (char *file_name,
-                    char  extensions[MAX_ARRAY_LENGTH][MAX_FILEEXT_LENGTH])
+int cmp_extensions (char  *file_name,
+                    char **extensions)
 {
     int status = 1;
 
-    for (int i = 0; i < MAX_ARRAY_LENGTH; i++)
+    for (int i = 0; i < e_arguments; i++)
     {
-        if (extensions[i][0] == 0)
-            continue;
-
         if (strncmp (file_name + strlen(file_name) - strlen(extensions[i]), /* End of file_name minus extension length -> extension as string */
                      extensions[i], /* Compare to actual extension */
-                     strlen(extensions[i]) /* Only compare actual extension */) == 0)
-            status = 0;
+                     strlen(extensions[i]) /* Only compare actual extension */) != 0)
+            continue;
+
+        status = 0;
     }
 
     return (status);
 }
+
 
 /**
  * arg_value - Filter out the value from a command line argument 
@@ -80,6 +90,7 @@ char *arg_value(char *argument)
     return (value);
 }
 
+
 /**
  * file_size - Get file size of file
  * @arg1: file path
@@ -106,6 +117,7 @@ long int file_size(char *path)
     fclose(file);
     return (size);
 }
+
 
 /**
  * count_lines - Count how many lines a file has
@@ -138,6 +150,7 @@ int count_lines(char *path)
     return (lines);
 }
 
+
 /**
  * main - Entry point of code
  *
@@ -148,62 +161,77 @@ int main (int   argc,
           char *argv[])
 {
     unsigned long total_lines = 0;
-    char extensions[MAX_ARRAY_LENGTH][MAX_FILEEXT_LENGTH];
-    char directories[MAX_ARRAY_LENGTH][MAX_DIRNAME_LENGTH];
-
-    /*  */
-    for (int i = 0; i < MAX_ARRAY_LENGTH; i++)
+   
+    /**
+     * Count argument types for dynamic assigning
+     * e_arguments and d_arguments are definde globally
+     */
+    for (int i = 0; i < argc; i++)
     {
-        extensions[i][0] = 0;
-        directories[i][0] = 0;
+        switch (argv[i][1])
+        {
+            case EXT_PREFIX:
+                e_arguments++;
+                break;
+            case DIR_PREFIX:
+                d_arguments++;
+                break;
+        }
     }
+    /* Dynamic assigning of arrays of strings */
+    char **extensions;
 
+    extensions = malloc(e_arguments * sizeof(char*)); /* allocate space for e_arguments char* pointers*/
+    for (int i = 0; i < e_arguments; i++)
+        extensions[i] = malloc(EXT_LENGTH + 1); /* allocate space for EXT_LENGTH + '\0' */
+
+    char **directories;
+
+    directories = malloc(d_arguments * sizeof(char*));
+    for (int i = 0; i < d_arguments; i++)
+        directories[i] = malloc(DIR_LENGTH + 1);
+
+
+    int counter_exts = 0;
+    int counter_dirs = 0;
     for (int i = 1; i < argc; i++)
     {
         char *value_buffer;
-        char type_buffer;
-
-        int counter_exts = 0;
-        int counter_dirs = 0;
 
         value_buffer = arg_value(argv[i]);
+        value_buffer[strlen(value_buffer) + 1] = '\0';
         if (value_buffer == NULL)
             continue;
 
         switch (argv[i][1])
         {
-            case 'f':
-                strcpy(extensions[i], value_buffer);
+            case EXT_PREFIX:
+                strcpy(extensions[counter_exts], value_buffer);
                 counter_exts++;
                 break;
-            case 'd':
-                strcpy(directories[i], value_buffer);
+            case DIR_PREFIX:
+                strcpy(directories[counter_dirs], value_buffer);
                 counter_dirs++;
                 break;
             default:
                 printf("Unknown argument type '%c', skipping.\n", argv[i][1]);
-                type_buffer = 0;
         }
 
         free(value_buffer);
     }
 
+
     /* List all recognized file types */
-    printf ("File types:");
-    for (int i = 0; i < MAX_ARRAY_LENGTH; i++)
-    {
-        if (extensions[i][0] == 0)
-            continue;
-        
+    printf ("File extensions:");
+
+    for (int i = 0; i < e_arguments; i++)
         printf (" %s", extensions[i]);
-    }
+
     printf ("\n");
 
-    for (int i = 0; i < MAX_ARRAY_LENGTH; i++)
-    {
-        if (directories[i][0] == 0)
-            continue;
 
+    for (int i = 0; i < d_arguments; i++)
+    {
         DIR *directory;
         struct dirent *element;
   
@@ -221,7 +249,7 @@ int main (int   argc,
                 continue;
 
             int lines;
-            char path[MAX_DIRNAME_LENGTH + 32 + MAX_FILEEXT_LENGTH];
+            char path[DIR_LENGTH + BASE_LENGTH + EXT_LENGTH];
 
             sprintf (path, "%s/%s", directories[i], element->d_name); /* merge directory path and whole file name */
             lines = count_lines(path);
