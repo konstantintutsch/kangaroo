@@ -34,6 +34,32 @@ int endswith (char *str,
 }
 
 /**
+ * arg_value - Filter out the value from @arg1 
+ *             e. g. `-d./src` -> `./src`
+ *
+ * Return - String
+ */
+
+char *arg_value(char *argument)
+{
+    /* Arguments should always start with a dash */
+    if (argument[0] != '-')
+    {
+        printf("Missing dash. Not an argument: %s\n", argument);
+        return NULL;
+    }
+
+    char *value = malloc(strlen(argument));
+
+    /* Write string to value, skip first two characters */
+    memcpy (value, argument + 2, strlen(argument));
+    /* End string */
+    value[strlen(argument)] = 0;
+
+    return value;
+}
+
+/**
  * main - Entry point of code
  *
  * Return - 0 Success
@@ -62,36 +88,35 @@ int main (int   argc,
     dirs[i][0] = 0;
   }
 
-  for (int arg = 1; arg < argc; arg++)
-  {
-    if (argv[arg][0] == '-')
+    for (int argument_index = 1; argument_index < argc; argument_index++)
     {
-      /* argv + 2: remove the e. g. "-d"
-       * memcpy (…) writes argv + 2 to argv (end) into langs
-       * last byte becomes a '\0' to end the string correctly
-       */
-      if (argv[arg][1] == 'l')
-      {
-        langs[arg][0] = '.';
-        memcpy (langs[arg] + 1, argv[arg] + 2, strlen(argv[arg]));
-        langs[arg][strlen(langs[arg])] = 0;
-      }
-      else if (argv[arg][1] == 'd')
-      {
-        memcpy (dirs[arg], argv[arg] + 2, strlen(argv[arg]));
-        dirs[arg][strlen(dirs[arg])] = 0;
-      }
-      else
-      {
-        printf ("Unknown parameter: -%c\n", argv[arg][1]);
-        return (1);
-      }
+        char *value_buffer;
+        char type_buffer;
+
+        int counter_langs = 0;
+        int counter_dirs = 0;
+
+        value_buffer = arg_value(argv[argument_index]);
+        if (value_buffer == NULL)
+            continue;
+
+        switch (argv[argument_index][1])
+        {
+            case 'l':
+                strcpy(langs[counter_langs], value_buffer);
+                counter_langs++;
+                break;
+            case 'd':
+                strcpy(dirs[counter_dirs], value_buffer);
+                counter_dirs++;
+                break;
+            default:
+                printf("Unknown argument type '%c', skipping.\n", argv[argument_index][1]);
+                type_buffer = 0;
+        }
+
+        free(value_buffer);
     }
-    else
-    {
-      //printf ("Ignoring: %s\n", argv[arg]);
-    }
-  }
 
   printf ("Languages:");
   for (int lang = 0; lang < MAX_ARRAY_LENGTH; lang++)
