@@ -1,5 +1,5 @@
 ```
-Copyright (C)  2023  Konstantin Tutsch
+Copyright (c) 2023-2024 Konstantin Tutsch.
 This project is distributed under the GNU General Public License.
 ```
 A simple application to count how many **l**ines **o**f a **c**ode project has.
