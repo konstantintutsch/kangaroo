@@ -26,27 +26,29 @@
 #define MAX_DIRNAME_LENGTH 256
 
 /**
- * endswith - Checks if string ends with extension from array `exts`
+ * cmp_extensions - Checks if @arg1 ends with extension from array @arg2
  *
- * Return - 0 No
- *          1 Yes
+ * Return - 0 Success
+ *          1 Failure
  */
 
-int endswith (char *str,
-              char exts[MAX_ARRAY_LENGTH][MAX_FILEEXT_LENGTH])
+int cmp_extensions (char *file_name,
+                    char  extensions[MAX_ARRAY_LENGTH][MAX_FILEEXT_LENGTH])
 {
-    int withext = 0;
+    int status = 1;
 
-    for (int ext = 0; ext < MAX_ARRAY_LENGTH; ext++)
+    for (int extension_index = 0; extension_index < MAX_ARRAY_LENGTH; extension_index++)
     {
-        if (exts[ext][0] != 0)
-        {
-            if (strncmp (str + strlen (str) - strlen (exts[ext]), exts[ext], strlen (exts[ext])) == 0)
-            withext = 1;
-        }
+        if (extensions[extension_index][0] == 0)
+            continue;
+
+        if (strncmp (file_name + strlen(file_name) - strlen(extensions[extension_index]), /* End of file_name minus extension length -> extension as string */
+                     extensions[extension_index], /* Compare to actual extension */
+                     strlen(extensions[extension_index]) /* Only compare actual extension */) == 0)
+            status = 0;
     }
 
-    return withext;
+    return status;
 }
 
 /**
@@ -157,7 +159,7 @@ int main (int   argc,
 
                 while ((ep = readdir (directory)) != NULL)
                 {
-                    if (endswith (ep->d_name, exts))
+                    if (cmp_extensions (ep->d_name, exts) == 0)
                     {
                         sprintf (file_path, "%s/%s", dirs[dir], ep->d_name);
                         printf ("- %s: ", ep->d_name);
