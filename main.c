@@ -37,18 +37,18 @@ int cmp_extensions (char *file_name,
 {
     int status = 1;
 
-    for (int extension_index = 0; extension_index < MAX_ARRAY_LENGTH; extension_index++)
+    for (int i = 0; i < MAX_ARRAY_LENGTH; i++)
     {
-        if (extensions[extension_index][0] == 0)
+        if (extensions[i][0] == 0)
             continue;
 
-        if (strncmp (file_name + strlen(file_name) - strlen(extensions[extension_index]), /* End of file_name minus extension length -> extension as string */
-                     extensions[extension_index], /* Compare to actual extension */
-                     strlen(extensions[extension_index]) /* Only compare actual extension */) == 0)
+        if (strncmp (file_name + strlen(file_name) - strlen(extensions[i]), /* End of file_name minus extension length -> extension as string */
+                     extensions[i], /* Compare to actual extension */
+                     strlen(extensions[i]) /* Only compare actual extension */) == 0)
             status = 0;
     }
 
-    return status;
+    return (status);
 }
 
 /**
@@ -64,7 +64,7 @@ char *arg_value(char *argument)
     if (argument[0] != '-')
     {
         printf("Missing dash. Not an argument: %s\n", argument);
-        return NULL;
+        return (NULL);
     }
 
     char *value = malloc(strlen(argument));
@@ -74,7 +74,7 @@ char *arg_value(char *argument)
     /* End string */
     value[strlen(argument)] = 0;
 
-    return value;
+    return (value);
 }
 
 /**
@@ -87,26 +87,17 @@ int main (int   argc,
           char *argv[])
 {
     unsigned long total_lines = 0;
-    char exts[MAX_ARRAY_LENGTH][MAX_FILEEXT_LENGTH];
-    char dirs[MAX_ARRAY_LENGTH][MAX_DIRNAME_LENGTH];
+    char extensions[MAX_ARRAY_LENGTH][MAX_FILEEXT_LENGTH];
+    char directories[MAX_ARRAY_LENGTH][MAX_DIRNAME_LENGTH];
 
-    DIR *directory;
-    struct dirent *ep;
-  
-    FILE *file;
-    char file_path[MAX_DIRNAME_LENGTH + 32 + MAX_FILEEXT_LENGTH];
-    unsigned long file_lines = 0;
-    char *buffer = NULL;
-    size_t llen = 0;
-    ssize_t lread;
-
+    /*  */
     for (int i = 0; i < MAX_ARRAY_LENGTH; i++)
     {
-        exts[i][0] = 0;
-        dirs[i][0] = 0;
+        extensions[i][0] = 0;
+        directories[i][0] = 0;
     }
 
-    for (int argument_index = 1; argument_index < argc; argument_index++)
+    for (int i = 1; i < argc; i++)
     {
         char *value_buffer;
         char type_buffer;
@@ -114,79 +105,87 @@ int main (int   argc,
         int counter_exts = 0;
         int counter_dirs = 0;
 
-        value_buffer = arg_value(argv[argument_index]);
+        value_buffer = arg_value(argv[i]);
         if (value_buffer == NULL)
             continue;
 
-        switch (argv[argument_index][1])
+        switch (argv[i][1])
         {
             case 'f':
-                strcpy(exts[counter_exts], value_buffer);
+                strcpy(extensions[i], value_buffer);
                 counter_exts++;
                 break;
             case 'd':
-                strcpy(dirs[counter_dirs], value_buffer);
+                strcpy(directories[i], value_buffer);
                 counter_dirs++;
                 break;
             default:
-                printf("Unknown argument type '%c', skipping.\n", argv[argument_index][1]);
+                printf("Unknown argument type '%c', skipping.\n", argv[i][1]);
                 type_buffer = 0;
         }
 
         free(value_buffer);
     }
 
+    /* List all recognized file types */
     printf ("File types:");
-    for (int lang = 0; lang < MAX_ARRAY_LENGTH; lang++)
+    for (int i = 0; i < MAX_ARRAY_LENGTH; i++)
     {
-        if (exts[lang][0] != 0)
-        {
-            printf (" %s", exts[lang]);
-        }
+        if (extensions[i][0] == 0)
+            continue;
+        
+        printf (" %s", extensions[i]);
     }
     printf ("\n");
-    for (int dir = 0; dir < MAX_ARRAY_LENGTH; dir++)
+
+    for (int i = 0; i < MAX_ARRAY_LENGTH; i++)
     {
-        if (dirs[dir][0] != 0)
+        if (directories[i][0] == 0)
+            continue;
+
+        DIR *directory;
+        struct dirent *element;
+  
+        directory = opendir(directories[i]);
+        if (directory == NULL)
         {
-            printf ("Directory %s", dirs[dir]);
-      
-            directory = opendir (dirs[dir]);
+            printf ("Error opening directory %s: %s\n", directories[i], strerror(errno));
+            continue;
+        }
 
-            if (directory != NULL)
+        printf ("Directory %s\n", directories[i]);
+
+        while ((element = readdir(directory)) != NULL)
+        {
+            if (cmp_extensions (element->d_name, extensions) != 0)
+                continue;
+
+            FILE *file;
+            char path[MAX_DIRNAME_LENGTH + 32 + MAX_FILEEXT_LENGTH];
+            char *buffer = NULL;
+            int lines;
+            size_t llen = 0;
+            ssize_t lread;
+            
+            sprintf (path, "%s/%s", directories[i], element->d_name); /* merge directory path and whole file name */
+            
+            printf ("- %s: ", element->d_name);
+            file = fopen (path, "r");
+            if (file == NULL)
             {
-                printf ("\n");
-
-                while ((ep = readdir (directory)) != NULL)
-                {
-                    if (cmp_extensions (ep->d_name, exts) == 0)
-                    {
-                        sprintf (file_path, "%s/%s", dirs[dir], ep->d_name);
-                        printf ("- %s: ", ep->d_name);
-                        file = fopen (file_path, "r");
-                        if (file == NULL)
-                        {
-                            printf ("%s\n", strerror (errno));
-                            file_lines = 0;
-                        }
-                        else
-                        {
-                            while ((lread = getline (&buffer, &llen, file)) != -1)
-                                file_lines++;
-                            fclose (file);
-
-                            printf ("%ld\n", file_lines);
-                        }
-
-                        total_lines += file_lines;
-                        file_lines = 0;
-                    }
-                }
+                printf ("%s\n", strerror (errno));
             }
             else
             {
-                printf (": %s\n", strerror (errno));
+                while ((lread = getline (&buffer, &llen, file)) != -1)
+                    lines++;
+                
+                fclose (file);
+
+                printf ("%d\n", lines);
             }
+
+            total_lines += lines;
         }
     }
     printf ("Total lines of code: %ld\n", total_lines);
