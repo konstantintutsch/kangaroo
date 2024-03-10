@@ -22,6 +22,7 @@
 #include <errno.h>
 
 #include "files.h"
+#include "parse.h"
 
 
 #define EXT_PREFIX 'e'
@@ -31,63 +32,6 @@
 #define EXT_LENGTH 8
 #define DIR_LENGTH 256
 
-
-int extension_arguments = 0;
-int directory_arguments = 0;
-
-
-/**
- * cmp_extensions - Checks if string ends with string from array of strings
- * 
- * @arg1: string to check
- * @arg2: valid extensions
- *
- * @return: 0 -> Success / 1 -> Failure
- */
-
-int cmp_extensions(char  *file_name,
-                   char **extensions)
-{
-    for (int i = 0; i < extension_arguments; i++)
-    {
-        if (strncmp(file_name + strlen(file_name) - strlen(extensions[i]), /* End of file_name minus extension length -> extension as string */
-                     extensions[i], /* Compare to actual extension */
-                     strlen(extensions[i]) /* Only compare actual extension */) != 0)
-            continue;
-
-        return (0);
-    }
-
-    return (1);
-}
-
-/**
- * arg_value - Filter out the value from a command line argument
- *             e. g. `-d./src` -> `./src`
- *
- * @arg1: command line argument
- *
- * @return: value of the argument
- */
-
-char *arg_value(char *argument)
-{
-    /* Arguments should always start with a dash */
-    if (argument[0] != '-')
-    {
-        printf("Missing dash. Not an argument: %s\n", argument);
-        return (NULL);
-    }
-
-    char *value = malloc(strlen(argument));
-
-    /* Write string to value, skip first two characters */
-    memcpy(value, argument + 2, strlen(argument));
-    /* End string */
-    value[strlen(argument)] = 0;
-
-    return (value);
-}
 
 /**
  * main - Entry point of code
@@ -100,33 +44,18 @@ int main(int   argc,
 {
     unsigned long total_lines = 0;
 
-    /**
-     * Count argument types for dynamic assigning
-     * extension_arguments and directory_arguments are definde globally -> access in every for loop
-     */
-    for (int i = 0; i < argc; i++)
-    {
-        switch (argv[i][1])
-        {
-        case EXT_PREFIX:
-            extension_arguments++;
-            break;
-        case DIR_PREFIX:
-            directory_arguments++;
-            break;
-        }
-    }
     /* Dynamic assigning of arrays of strings */
-    char **extensions;
+    int e_arguments = arg_type(argv, 'e');
+    int d_arguments = arg_type(argv, 'd');
 
-    extensions = malloc(extension_arguments * sizeof(char *)); /* allocate space for extension_arguments char* pointers*/
-    for (int i = 0; i < extension_arguments; i++)
+    char **extensions;
+    extensions = malloc(e_arguments * sizeof(char *)); /* allocate space for e_arguments char* pointers*/
+    for (int i = 0; i < e_arguments; i++)
         extensions[i] = malloc(EXT_LENGTH + 1); /* allocate space for EXT_LENGTH + '\0' */
 
     char **directories;
-
-    directories = malloc(directory_arguments * sizeof(char *));
-    for (int i = 0; i < directory_arguments; i++)
+    directories = malloc(d_arguments * sizeof(char *));
+    for (int i = 0; i < d_arguments; i++)
         directories[i] = malloc(DIR_LENGTH + 1);
 
 
@@ -162,13 +91,13 @@ int main(int   argc,
     /* List all recognized file types */
     printf("File extensions:");
 
-    for (int i = 0; i < extension_arguments; i++)
+    for (int i = 0; i < e_arguments; i++)
         printf(" %s", extensions[i]);
 
     printf("\n");
 
 
-    for (int i = 0; i < directory_arguments; i++)
+    for (int i = 0; i < d_arguments; i++)
     {
         DIR *directory;
         struct dirent *element;
