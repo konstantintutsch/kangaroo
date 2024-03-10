@@ -23,6 +23,7 @@
 
 #include "files.h"
 #include "parse.h"
+#include "compare.h"
 
 
 #define EXT_PREFIX 'e'
@@ -77,7 +78,7 @@ int main(int   argc,
             counter_exts++;
             break;
         case DIR_PREFIX:
-            strcpy(directories[counter_dirs], value_buffer);
+            realpath(value_buffer, directories[counter_dirs]);
             counter_dirs++;
             break;
         default:
@@ -101,7 +102,11 @@ int main(int   argc,
     {
         DIR *directory;
         struct dirent *element;
-  
+
+        int duplicate = deduplicate(directories, directories[i]);
+        if (duplicate != -1 && duplicate < i)
+            continue;
+
         directory = opendir(directories[i]);
 
         if (directory == NULL)
@@ -114,7 +119,7 @@ int main(int   argc,
 
         while ((element = readdir(directory)) != NULL)
         {
-            if (cmp_extensions(element->d_name, extensions) != 0) /* files extension doesn't match */
+            if (cmp_extensions(element->d_name, extensions) != 0) /* file's extension doesn't match */
                 continue;
 
             int lines;

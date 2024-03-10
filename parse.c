@@ -30,32 +30,12 @@
 
 int array_elements(char **array)
 {
-    return (sizeof(array) / sizeof(char *));
-}
+    int count = 0;
 
-/**
- * cmp_extensions - Checks if string ends with string from array of strings
- * 
- * @arg1: string to check
- * @arg2: valid extensions
- *
- * @return: 0 -> Success / 1 -> Failure
- */
+    while (array[count] != NULL)
+        count++;
 
-int cmp_extensions(char  *file_name,
-                   char **extensions)
-{
-    for (int i = 0; i < array_elements(extensions); i++)
-    {
-        if (strncmp(file_name + strlen(file_name) - strlen(extensions[i]), /* End of file_name minus extension length -> extension as string */
-                     extensions[i], /* Compare to actual extension */
-                     strlen(extensions[i]) /* Only compare actual extension */) != 0)
-            continue;
-
-        return (0);
-    }
-
-    return (1);
+    return (count);
 }
 
 /**
@@ -100,7 +80,7 @@ int arg_type(char **arguments,
 {
     int amount = 0;
 
-    for (int i = 0; i < array_elements(arguments), i++;)
+    for (int i = 0; i < array_elements(arguments); i++)
     {
         if (arguments[i][1] == type)
             amount++;
