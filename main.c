@@ -18,9 +18,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/types.h>
 #include <dirent.h>
 #include <errno.h>
+
+#include "files.h"
 
 
 #define EXT_PREFIX 'e'
@@ -86,66 +87,6 @@ char *arg_value(char *argument)
     value[strlen(argument)] = 0;
 
     return (value);
-}
-
-/**
- * file_size - Get file size of file
- *
- * @arg1: file path
- *
- * @return: size of the given file
- */
-
-long int file_size(char *path)
-{
-    long int size;
-
-    FILE *file;
-
-    file = fopen(path, "r");
-    if (file == NULL)
-    {
-        printf("- Error getting file size of %s: %s\n", path, strerror(errno));
-        return (0);
-    }
-
-    fseek(file, 0, SEEK_END);
-    size = ftell(file);
-
-    fclose(file);
-    return (size);
-}
-
-/**
- * count_lines - Count how many lines a file has
- *
- * @arg1: file path
- *
- * @return: line count of the given file
- */
-
-int count_lines(char *path)
-{
-    int lines = 0;
-
-    FILE *file;
-    char *buffer = malloc(file_size(path));
-    size_t llen = 0;
-    ssize_t lread;
-
-    file = fopen(path, "r");
-    if (file == NULL)
-    {
-        printf("- Error opening file %s: %s\n", path, strerror(errno));
-        return (-1);
-    }
-
-    while ((lread = getline(&buffer, &llen, file)) != -1)
-        lines++;
-
-    fclose(file);
-    free(buffer);
-    return (lines);
 }
 
 /**
