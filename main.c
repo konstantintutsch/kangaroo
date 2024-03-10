@@ -19,18 +19,18 @@
 int endswith (char *str,
               char exts[MAX_ARRAY_LENGTH][MAX_FILEEXT_LENGTH])
 {
-  int withext = 0;
+    int withext = 0;
 
-  for (int ext = 0; ext < MAX_ARRAY_LENGTH; ext++)
-  {
-    if (exts[ext][0] != 0)
+    for (int ext = 0; ext < MAX_ARRAY_LENGTH; ext++)
     {
-      if (strncmp (str + strlen (str) - strlen (exts[ext]), exts[ext], strlen (exts[ext])) == 0)
-        withext = 1;
+        if (exts[ext][0] != 0)
+        {
+            if (strncmp (str + strlen (str) - strlen (exts[ext]), exts[ext], strlen (exts[ext])) == 0)
+            withext = 1;
+        }
     }
-  }
 
-  return withext;
+    return withext;
 }
 
 /**
@@ -68,25 +68,25 @@ char *arg_value(char *argument)
 int main (int   argc,
           char *argv[])
 {
-  unsigned long total_lines = 0;
-  char langs[MAX_ARRAY_LENGTH][MAX_FILEEXT_LENGTH];
-  char dirs[MAX_ARRAY_LENGTH][MAX_DIRNAME_LENGTH];
+    unsigned long total_lines = 0;
+    char langs[MAX_ARRAY_LENGTH][MAX_FILEEXT_LENGTH];
+    char dirs[MAX_ARRAY_LENGTH][MAX_DIRNAME_LENGTH];
 
-  DIR *directory;
-  struct dirent *ep;
+    DIR *directory;
+    struct dirent *ep;
   
-  FILE *file;
-  char file_path[MAX_DIRNAME_LENGTH + 32 + MAX_FILEEXT_LENGTH];
-  unsigned long file_lines = 0;
-  char *buffer = NULL;
-  size_t llen = 0;
-  ssize_t lread;
+    FILE *file;
+    char file_path[MAX_DIRNAME_LENGTH + 32 + MAX_FILEEXT_LENGTH];
+    unsigned long file_lines = 0;
+    char *buffer = NULL;
+    size_t llen = 0;
+    ssize_t lread;
 
-  for (int i = 0; i < MAX_ARRAY_LENGTH; i++)
-  {
-    langs[i][0] = 0;
-    dirs[i][0] = 0;
-  }
+    for (int i = 0; i < MAX_ARRAY_LENGTH; i++)
+    {
+        langs[i][0] = 0;
+        dirs[i][0] = 0;
+    }
 
     for (int argument_index = 1; argument_index < argc; argument_index++)
     {
@@ -118,60 +118,60 @@ int main (int   argc,
         free(value_buffer);
     }
 
-  printf ("Languages:");
-  for (int lang = 0; lang < MAX_ARRAY_LENGTH; lang++)
-  {
-    if (langs[lang][0] != 0)
+    printf ("Languages:");
+    for (int lang = 0; lang < MAX_ARRAY_LENGTH; lang++)
     {
-      printf (" %s", langs[lang]);
-    }
-  }
-  printf ("\n");
-  for (int dir = 0; dir < MAX_ARRAY_LENGTH; dir++)
-  {
-    if (dirs[dir][0] != 0)
-    {
-      printf ("Directory %s", dirs[dir]);
-      
-      directory = opendir (dirs[dir]);
-
-      if (directory != NULL)
-      {
-        printf ("\n");
-
-        while ((ep = readdir (directory)) != NULL)
+        if (langs[lang][0] != 0)
         {
-          if (endswith (ep->d_name, langs))
-          {
-            sprintf (file_path, "%s/%s", dirs[dir], ep->d_name);
-            printf ("- %s: ", ep->d_name);
-            file = fopen (file_path, "r");
-            if (file == NULL)
+            printf (" %s", langs[lang]);
+        }
+    }
+    printf ("\n");
+    for (int dir = 0; dir < MAX_ARRAY_LENGTH; dir++)
+    {
+        if (dirs[dir][0] != 0)
+        {
+            printf ("Directory %s", dirs[dir]);
+      
+            directory = opendir (dirs[dir]);
+
+            if (directory != NULL)
             {
-              printf ("%s\n", strerror (errno));
-              file_lines = 0;
+                printf ("\n");
+
+                while ((ep = readdir (directory)) != NULL)
+                {
+                    if (endswith (ep->d_name, langs))
+                    {
+                        sprintf (file_path, "%s/%s", dirs[dir], ep->d_name);
+                        printf ("- %s: ", ep->d_name);
+                        file = fopen (file_path, "r");
+                        if (file == NULL)
+                        {
+                            printf ("%s\n", strerror (errno));
+                            file_lines = 0;
+                        }
+                        else
+                        {
+                            while ((lread = getline (&buffer, &llen, file)) != -1)
+                                file_lines++;
+                            fclose (file);
+
+                            printf ("%ld\n", file_lines);
+                        }
+
+                        total_lines += file_lines;
+                        file_lines = 0;
+                    }
+                }
             }
             else
             {
-              while ((lread = getline (&buffer, &llen, file)) != -1)
-                file_lines++;
-              fclose (file);
-
-              printf ("%ld\n", file_lines);
+                printf (": %s\n", strerror (errno));
             }
-
-            total_lines += file_lines;
-            file_lines = 0;
-          }
         }
-      }
-      else
-      {
-        printf (": %s\n", strerror (errno));
-      }
     }
-  }
-  printf ("Total lines of code: %ld\n", total_lines);
+    printf ("Total lines of code: %ld\n", total_lines);
 
-  return (0);
+    return (0);
 }
