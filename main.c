@@ -45,6 +45,9 @@ int main(int   argc,
 {
     unsigned long total_lines = 0;
 
+    if (arg_type(argv, 'r') > 0)
+        int recursive = 1;
+
     /* Dynamic assigning of arrays of strings */
     int e_arguments = arg_type(argv, 'e');
     int d_arguments = arg_type(argv, 'd');
@@ -81,8 +84,6 @@ int main(int   argc,
             realpath(value_buffer, directories[counter_dirs]);
             counter_dirs++;
             break;
-        default:
-            printf("Unknown argument type '%c', skipping.\n", argv[i][1]);
         }
 
         free(value_buffer); /* free local variable from function arg_value() */

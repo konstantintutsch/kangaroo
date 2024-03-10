@@ -8,14 +8,16 @@ A simple application to count how many **l**ines **o**f a **c**ode project has.
 $ loc -d. -e.c -e.h
 File extensions: .c .h
 
-Directory .
-- files.h: 7
+Directory /home/konstantin/Code/loc
 - files.c: 82
-- parse.h: 9
-- parse.c: 110
-- main.c: 136
+- files.h: 7
+- parse.h: 8
+- compare.h: 7
+- compare.c: 80
+- parse.c: 90
+- main.c: 142
 
-Total lines of code: 344
+Total lines of code: 416
 ```
 
 **loc** also supports:
