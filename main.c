@@ -31,23 +31,23 @@
 #define DIR_LENGTH 256
 
 
-int e_arguments = 0;
-int d_arguments = 0;
+int extension_arguments = 0;
+int directory_arguments = 0;
 
 
 /**
  * cmp_extensions - Checks if string ends with string from array of strings
+ * 
  * @arg1: string to check
  * @arg2: valid extensions
  *
- * Return - 0 Success
- *          1 Failure
+ * @return: 0 -> Success / 1 -> Failure
  */
 
 int cmp_extensions (char  *file_name,
                     char **extensions)
 {
-    for (int i = 0; i < e_arguments; i++)
+    for (int i = 0; i < extension_arguments; i++)
     {
         if (strncmp (file_name + strlen(file_name) - strlen(extensions[i]), /* End of file_name minus extension length -> extension as string */
                      extensions[i], /* Compare to actual extension */
@@ -60,13 +60,13 @@ int cmp_extensions (char  *file_name,
     return (1);
 }
 
-
 /**
  * arg_value - Filter out the value from a command line argument 
  *             e. g. `-d./src` -> `./src`
+ *
  * @arg1: command line argument
  *
- * Return - String
+ * @return: value of the argument
  */
 
 char *arg_value(char *argument)
@@ -88,12 +88,12 @@ char *arg_value(char *argument)
     return (value);
 }
 
-
 /**
  * file_size - Get file size of file
+ *
  * @arg1: file path
  *
- * Return - Long Int
+ * @return: size of the given file
  */
 
 long int file_size(char *path)
@@ -116,12 +116,12 @@ long int file_size(char *path)
     return (size);
 }
 
-
 /**
  * count_lines - Count how many lines a file has
+ *
  * @arg1: file path
  *
- * Return - Int
+ * @return: line count of the given file
  */
 
 int count_lines(char *path)
@@ -148,11 +148,10 @@ int count_lines(char *path)
     return (lines);
 }
 
-
 /**
  * main - Entry point of code
  *
- * Return - 0 Success
+ * @return: 0 -> Success
  */
 
 int main (int   argc,
@@ -162,31 +161,31 @@ int main (int   argc,
    
     /**
      * Count argument types for dynamic assigning
-     * e_arguments and d_arguments are definde globally -> access in every for loop
+     * extension_arguments and directory_arguments are definde globally -> access in every for loop
      */
     for (int i = 0; i < argc; i++)
     {
         switch (argv[i][1])
         {
             case EXT_PREFIX:
-                e_arguments++;
+                extension_arguments++;
                 break;
             case DIR_PREFIX:
-                d_arguments++;
+                directory_arguments++;
                 break;
         }
     }
     /* Dynamic assigning of arrays of strings */
     char **extensions;
 
-    extensions = malloc(e_arguments * sizeof(char*)); /* allocate space for e_arguments char* pointers*/
-    for (int i = 0; i < e_arguments; i++)
+    extensions = malloc(extension_arguments * sizeof(char*)); /* allocate space for extension_arguments char* pointers*/
+    for (int i = 0; i < extension_arguments; i++)
         extensions[i] = malloc(EXT_LENGTH + 1); /* allocate space for EXT_LENGTH + '\0' */
 
     char **directories;
 
-    directories = malloc(d_arguments * sizeof(char*));
-    for (int i = 0; i < d_arguments; i++)
+    directories = malloc(directory_arguments * sizeof(char*));
+    for (int i = 0; i < directory_arguments; i++)
         directories[i] = malloc(DIR_LENGTH + 1);
 
 
@@ -222,13 +221,13 @@ int main (int   argc,
     /* List all recognized file types */
     printf ("File extensions:");
 
-    for (int i = 0; i < e_arguments; i++)
+    for (int i = 0; i < extension_arguments; i++)
         printf (" %s", extensions[i]);
 
     printf ("\n");
 
 
-    for (int i = 0; i < d_arguments; i++)
+    for (int i = 0; i < directory_arguments; i++)
     {
         DIR *directory;
         struct dirent *element;
