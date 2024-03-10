@@ -1,3 +1,20 @@
+/**
+ * Copyright (c) 2023-2024 Konstantin Tutsch.
+ * 
+ * This program is free software: you can redistribute it and/or modify  
+ * it under the terms of the GNU General Public License as published by  
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License 
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -5,136 +22,245 @@
 #include <dirent.h>
 #include <errno.h>
 
-#define MAX_ARRAY_LENGTH 16
-#define MAX_FILEEXT_LENGTH 8
-#define MAX_DIRNAME_LENGTH 256
+
+#define EXT_PREFIX 'e'
+#define DIR_PREFIX 'd'
+
+#define BASE_LENGTH 64
+#define EXT_LENGTH 8
+#define DIR_LENGTH 256
 
 
-int endswith (char *str,
-              char exts[MAX_ARRAY_LENGTH][MAX_FILEEXT_LENGTH])
+int e_arguments = 0;
+int d_arguments = 0;
+
+
+/**
+ * cmp_extensions - Checks if string ends with string from array of strings
+ * @arg1: string to check
+ * @arg2: valid extensions
+ *
+ * Return - 0 Success
+ *          1 Failure
+ */
+
+int cmp_extensions (char  *file_name,
+                    char **extensions)
 {
-  int withext = 0;
-
-  for (int ext = 0; ext < MAX_ARRAY_LENGTH; ext++)
-  {
-    if (exts[ext][0] != 0)
+    for (int i = 0; i < e_arguments; i++)
     {
-      if (strncmp (str + strlen (str) - strlen (exts[ext]), exts[ext], strlen (exts[ext])) == 0)
-        withext = 1;
-    }
-  }
+        if (strncmp (file_name + strlen(file_name) - strlen(extensions[i]), /* End of file_name minus extension length -> extension as string */
+                     extensions[i], /* Compare to actual extension */
+                     strlen(extensions[i]) /* Only compare actual extension */) != 0)
+            continue;
 
-  return withext;
+        return (0);
+    }
+
+    return (1);
 }
+
+
+/**
+ * arg_value - Filter out the value from a command line argument 
+ *             e. g. `-d./src` -> `./src`
+ * @arg1: command line argument
+ *
+ * Return - String
+ */
+
+char *arg_value(char *argument)
+{
+    /* Arguments should always start with a dash */
+    if (argument[0] != '-')
+    {
+        printf("Missing dash. Not an argument: %s\n", argument);
+        return (NULL);
+    }
+
+    char *value = malloc(strlen(argument));
+
+    /* Write string to value, skip first two characters */
+    memcpy (value, argument + 2, strlen(argument));
+    /* End string */
+    value[strlen(argument)] = 0;
+
+    return (value);
+}
+
+
+/**
+ * file_size - Get file size of file
+ * @arg1: file path
+ *
+ * Return - Long Int
+ */
+
+long int file_size(char *path)
+{
+    long int size;
+
+    FILE *file;
+
+    file = fopen(path, "r");
+    if (file == NULL)
+    {
+        printf("- Error getting file size of %s: %s\n", path, strerror(errno));
+        return (0);
+    }
+
+    fseek(file, 0, SEEK_END);
+    size = ftell(file);
+
+    fclose(file);
+    return (size);
+}
+
+
+/**
+ * count_lines - Count how many lines a file has
+ * @arg1: file path
+ *
+ * Return - Int
+ */
+
+int count_lines(char *path)
+{
+    int lines = 0;
+
+    FILE *file;
+    char *buffer = malloc (file_size(path));
+    size_t llen = 0;
+    ssize_t lread;
+
+    file = fopen(path, "r");
+    if (file == NULL)
+    {
+        printf("- Error opening file %s: %s\n", path, strerror(errno));
+        return (-1);
+    }
+
+    while ((lread = getline(&buffer, &llen, file)) != -1)
+        lines++;
+                
+    fclose (file);
+    free(buffer);
+    return (lines);
+}
+
+
+/**
+ * main - Entry point of code
+ *
+ * Return - 0 Success
+ */
 
 int main (int   argc,
           char *argv[])
 {
-  unsigned long total_lines = 0;
-  char langs[MAX_ARRAY_LENGTH][MAX_FILEEXT_LENGTH];
-  char dirs[MAX_ARRAY_LENGTH][MAX_DIRNAME_LENGTH];
-
-  DIR *directory;
-  struct dirent *ep;
-  
-  FILE *file;
-  char file_path[MAX_DIRNAME_LENGTH + 32 + MAX_FILEEXT_LENGTH];
-  unsigned long file_lines = 0;
-  char *buffer = NULL;
-  size_t llen = 0;
-  ssize_t lread;
-
-  for (int i = 0; i < MAX_ARRAY_LENGTH; i++)
-  {
-    langs[i][0] = 0;
-    dirs[i][0] = 0;
-  }
-
-  for (int arg = 1; arg < argc; arg++)
-  {
-    if (argv[arg][0] == '-')
+    unsigned long total_lines = 0;
+   
+    /**
+     * Count argument types for dynamic assigning
+     * e_arguments and d_arguments are definde globally -> access in every for loop
+     */
+    for (int i = 0; i < argc; i++)
     {
-      /* argv + 2: remove the e. g. "-d"
-       * memcpy (…) writes argv + 2 to argv (end) into langs
-       * last byte becomes a '\0' to end the string correctly
-       */
-      if (argv[arg][1] == 'l')
-      {
-        langs[arg][0] = '.';
-        memcpy (langs[arg] + 1, argv[arg] + 2, strlen(argv[arg]));
-        langs[arg][strlen(langs[arg])] = 0;
-      }
-      else if (argv[arg][1] == 'd')
-      {
-        memcpy (dirs[arg], argv[arg] + 2, strlen(argv[arg]));
-        dirs[arg][strlen(dirs[arg])] = 0;
-      }
-      else
-      {
-        printf ("Unknown parameter: -%c\n", argv[arg][1]);
-        return (1);
-      }
-    }
-    else
-    {
-      //printf ("Ignoring: %s\n", argv[arg]);
-    }
-  }
-
-  printf ("Languages:");
-  for (int lang = 0; lang < MAX_ARRAY_LENGTH; lang++)
-  {
-    if (langs[lang][0] != 0)
-    {
-      printf (" %s", langs[lang]);
-    }
-  }
-  printf ("\n");
-  for (int dir = 0; dir < MAX_ARRAY_LENGTH; dir++)
-  {
-    if (dirs[dir][0] != 0)
-    {
-      printf ("Directory %s", dirs[dir]);
-      
-      directory = opendir (dirs[dir]);
-
-      if (directory != NULL)
-      {
-        printf ("\n");
-
-        while ((ep = readdir (directory)) != NULL)
+        switch (argv[i][1])
         {
-          if (endswith (ep->d_name, langs))
-          {
-            sprintf (file_path, "%s/%s", dirs[dir], ep->d_name);
-            printf ("- %s: ", ep->d_name);
-            file = fopen (file_path, "r");
-            if (file == NULL)
-            {
-              printf ("%s\n", strerror (errno));
-              file_lines = 0;
-            }
-            else
-            {
-              while ((lread = getline (&buffer, &llen, file)) != -1)
-                file_lines++;
-              fclose (file);
-
-              printf ("%ld\n", file_lines);
-            }
-
-            total_lines += file_lines;
-            file_lines = 0;
-          }
+            case EXT_PREFIX:
+                e_arguments++;
+                break;
+            case DIR_PREFIX:
+                d_arguments++;
+                break;
         }
-      }
-      else
-      {
-        printf (": %s\n", strerror (errno));
-      }
     }
-  }
-  printf ("Total lines of code: %ld\n", total_lines);
+    /* Dynamic assigning of arrays of strings */
+    char **extensions;
 
-  return (0);
+    extensions = malloc(e_arguments * sizeof(char*)); /* allocate space for e_arguments char* pointers*/
+    for (int i = 0; i < e_arguments; i++)
+        extensions[i] = malloc(EXT_LENGTH + 1); /* allocate space for EXT_LENGTH + '\0' */
+
+    char **directories;
+
+    directories = malloc(d_arguments * sizeof(char*));
+    for (int i = 0; i < d_arguments; i++)
+        directories[i] = malloc(DIR_LENGTH + 1);
+
+
+    int counter_exts = 0;
+    int counter_dirs = 0;
+    for (int i = 1; i < argc; i++)
+    {
+        char *value_buffer;
+
+        value_buffer = arg_value(argv[i]);
+        value_buffer[strlen(value_buffer) + 1] = '\0';
+        if (value_buffer == NULL)
+            continue;
+
+        switch (argv[i][1])
+        {
+            case EXT_PREFIX:
+                strcpy(extensions[counter_exts], value_buffer);
+                counter_exts++;
+                break;
+            case DIR_PREFIX:
+                strcpy(directories[counter_dirs], value_buffer);
+                counter_dirs++;
+                break;
+            default:
+                printf("Unknown argument type '%c', skipping.\n", argv[i][1]);
+        }
+
+        free(value_buffer); /* free local variable from function arg_value() */
+    }
+
+
+    /* List all recognized file types */
+    printf ("File extensions:");
+
+    for (int i = 0; i < e_arguments; i++)
+        printf (" %s", extensions[i]);
+
+    printf ("\n");
+
+
+    for (int i = 0; i < d_arguments; i++)
+    {
+        DIR *directory;
+        struct dirent *element;
+  
+        directory = opendir(directories[i]);
+        if (directory == NULL)
+        {
+            printf ("\nError opening directory %s: %s\n", directories[i], strerror(errno));
+            continue;
+        }
+
+        printf ("\nDirectory %s\n", directories[i]);
+
+        while ((element = readdir(directory)) != NULL)
+        {
+            if (cmp_extensions (element->d_name, extensions) != 0) /* files extension doesn't match */
+                continue;
+
+            int lines;
+            char path[DIR_LENGTH + BASE_LENGTH + EXT_LENGTH];
+
+            sprintf (path, "%s/%s", directories[i], element->d_name); /* merge directory path and whole file name */
+            lines = count_lines(path);
+
+            if (lines == -1) /* could not get lines */
+                continue;
+            
+            printf ("- %s: %d\n", element->d_name, lines);
+            total_lines += lines;
+        }
+    }
+
+    printf ("\nTotal lines of code: %ld\n", total_lines);
+    return (0);
 }
