@@ -103,6 +103,7 @@ int main(int   argc,
         struct dirent *element;
   
         directory = opendir(directories[i]);
+
         if (directory == NULL)
         {
             printf("\nError opening directory %s: %s\n", directories[i], strerror(errno));

@@ -7,3 +7,4 @@ build:
 	$(CC) -c parse.c -o parse.o
 	ar rcs parse.a parse.o
 	$(CC) main.c -o loc $(CFLAGS)
+	rm files.o files.a parse.o parse.a

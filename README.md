@@ -5,14 +5,17 @@ This project is distributed under the GNU General Public License.
 A simple application to count how many **l**ines **o**f a **c**ode project has.
 
 ```
-$ loc -d. -e.c -e.md
-File extensions: .c .md
+$ loc -d. -e.c -e.h
+File extensions: .c .h
 
 Directory .
-- README.md: 20
-- main.c: 266
+- files.h: 7
+- files.c: 82
+- parse.h: 9
+- parse.c: 110
+- main.c: 136
 
-Total lines of code: 286
+Total lines of code: 344
 ```
 
 **loc** also supports:
