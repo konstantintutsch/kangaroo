@@ -69,7 +69,7 @@ int main (int   argc,
           char *argv[])
 {
     unsigned long total_lines = 0;
-    char langs[MAX_ARRAY_LENGTH][MAX_FILEEXT_LENGTH];
+    char exts[MAX_ARRAY_LENGTH][MAX_FILEEXT_LENGTH];
     char dirs[MAX_ARRAY_LENGTH][MAX_DIRNAME_LENGTH];
 
     DIR *directory;
@@ -84,7 +84,7 @@ int main (int   argc,
 
     for (int i = 0; i < MAX_ARRAY_LENGTH; i++)
     {
-        langs[i][0] = 0;
+        exts[i][0] = 0;
         dirs[i][0] = 0;
     }
 
@@ -93,7 +93,7 @@ int main (int   argc,
         char *value_buffer;
         char type_buffer;
 
-        int counter_langs = 0;
+        int counter_exts = 0;
         int counter_dirs = 0;
 
         value_buffer = arg_value(argv[argument_index]);
@@ -102,9 +102,9 @@ int main (int   argc,
 
         switch (argv[argument_index][1])
         {
-            case 'l':
-                strcpy(langs[counter_langs], value_buffer);
-                counter_langs++;
+            case 'f':
+                strcpy(exts[counter_exts], value_buffer);
+                counter_exts++;
                 break;
             case 'd':
                 strcpy(dirs[counter_dirs], value_buffer);
@@ -118,12 +118,12 @@ int main (int   argc,
         free(value_buffer);
     }
 
-    printf ("Languages:");
+    printf ("File types:");
     for (int lang = 0; lang < MAX_ARRAY_LENGTH; lang++)
     {
-        if (langs[lang][0] != 0)
+        if (exts[lang][0] != 0)
         {
-            printf (" %s", langs[lang]);
+            printf (" %s", exts[lang]);
         }
     }
     printf ("\n");
@@ -141,7 +141,7 @@ int main (int   argc,
 
                 while ((ep = readdir (directory)) != NULL)
                 {
-                    if (endswith (ep->d_name, langs))
+                    if (endswith (ep->d_name, exts))
                     {
                         sprintf (file_path, "%s/%s", dirs[dir], ep->d_name);
                         printf ("- %s: ", ep->d_name);

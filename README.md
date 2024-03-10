@@ -5,8 +5,8 @@ This project is distributed under the GNU General Public License.
 A simple application to count how many **l**ines **o**f a **c**ode project has.
 
 ```
- ~/code/loc → ./loc -d. -l.c -l.md
-Languages: .c .md
+ ~/code/loc → ./loc -d. -f.c -f.md
+File types: .c .md
 Directory .
 - README.md: 5
 - main.c: 123
