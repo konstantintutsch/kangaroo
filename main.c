@@ -9,6 +9,12 @@
 #define MAX_FILEEXT_LENGTH 8
 #define MAX_DIRNAME_LENGTH 256
 
+/**
+ * endswith - Checks if string ends with extension from array `exts`
+ *
+ * Return - 0 No
+ *          1 Yes
+ */
 
 int endswith (char *str,
               char exts[MAX_ARRAY_LENGTH][MAX_FILEEXT_LENGTH])
