@@ -5,7 +5,7 @@ Copyright (c) 2023-2024 Konstantin Tutsch.
 This project is distributed under the GNU General Public License.
 ```
 
-A simple application to count how many lines of a code project has.
+A simple application to count how many lines of code a project has.
 
 ```
 $ kangaroo -d. -e.c -e.h
