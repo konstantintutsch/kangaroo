@@ -110,7 +110,7 @@ long int count_directory(char  *path,
 
     if (directory == NULL)
     {
-        printf("\nError opening directory %s: %s\n", path, strerror(errno));
+        printf("Error opening directory %s: %s\n", path, strerror(errno));
         return (0);
     }
 
