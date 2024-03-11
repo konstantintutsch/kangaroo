@@ -14,12 +14,18 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "files.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <errno.h>
 #include <string.h>
+#include <dirent.h>
+#include <limits.h>
+
+#include "compare.h"
+
 
 /**
  * file_size - Get file size of file
@@ -70,7 +76,7 @@ int count_lines(char *path)
     if (file == NULL)
     {
         printf("- Error opening file %s: %s\n", path, strerror(errno));
-        return (-1);
+        return (0);
     }
 
     while ((lread = getline(&buffer, &llen, file)) != -1)
@@ -79,4 +85,78 @@ int count_lines(char *path)
     fclose(file);
     free(buffer);
     return (lines);
+}
+
+/**
+ * count_directory - Loop through the elements of a directory and count all lines of files
+ *
+ * @arg1: Path of directory
+ * @arg2: Array of extensions for files that should match
+ * @arg3: Recursive: 0/1
+ *
+ * @return: Total lines in directory
+ */
+
+long int count_directory(char  *path,
+                         char **extensions,
+                         int    recursive)
+{
+    long int total_lines = 0;
+
+    DIR *directory;
+    struct dirent *element;
+
+    directory = opendir(path);
+
+    if (directory == NULL)
+    {
+        printf("\nError opening directory %s: %s\n", path, strerror(errno));
+        return (0);
+    }
+
+    long int directory_lines = 0;
+
+    char line_buffer[PATH_MAX + 1024];
+    char list_buffer[65536];
+
+    while ((element = readdir(directory)) != NULL)
+    {
+        if (recursive == 1 &&
+            element->d_type == DT_DIR &&
+            strcmp(element->d_name, "." ) != 0 &&
+            strcmp(element->d_name, "..") != 0)
+        {
+            char access_path[PATH_MAX];
+            sprintf(access_path, "%s/%s", path, element->d_name);
+            total_lines += count_directory(access_path, extensions, recursive);
+            continue;
+        }
+        
+        if (cmp_extensions(element->d_name, extensions) != 0) /* file's extension doesn't match */
+            continue;
+
+
+        int lines = 0;
+        char file_path[PATH_MAX];
+        sprintf(file_path, "%s/%s", path, element->d_name); /* merge directory path and whole file name */
+        lines = count_lines(file_path);
+
+        directory_lines += lines;
+
+        /**
+         * Using buffer instead of directly printing -> order directories with their files
+         * Append new line to list_buffer
+         * -> Not using a single sprintf line to prevent buffer overflows
+         */
+        snprintf(line_buffer, sizeof(line_buffer), "- %s: %d lines\n", element->d_name, lines);
+        strncat(list_buffer, line_buffer, sizeof(list_buffer) - 1); 
+    }
+
+    if (directory_lines > 0)
+    {
+        total_lines += directory_lines;
+        printf("\n%s(All files @ %s: %ld lines)\n", list_buffer, path, directory_lines);
+    }
+
+    return (total_lines);
 }

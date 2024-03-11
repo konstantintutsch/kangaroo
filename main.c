@@ -18,7 +18,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <dirent.h>
 #include <errno.h>
 
 #include "files.h"
@@ -29,7 +28,6 @@
 #define EXT_PREFIX 'e'
 #define DIR_PREFIX 'd'
 
-#define BASE_LENGTH 64
 #define EXT_LENGTH 8
 #define DIR_LENGTH 256
 
@@ -43,10 +41,11 @@
 int main(int   argc,
          char *argv[])
 {
-    unsigned long total_lines = 0;
+    unsigned long int total_lines = 0;
+    int recursive = 0;
 
     if (arg_type(argv, 'r') > 0)
-        int recursive = 1;
+        recursive = 1;
 
     /* Dynamic assigning of arrays of strings */
     int e_arguments = arg_type(argv, 'e');
@@ -98,43 +97,13 @@ int main(int   argc,
 
     printf("\n");
 
-
     for (int i = 0; i < d_arguments; i++)
     {
-        DIR *directory;
-        struct dirent *element;
-
         int duplicate = deduplicate(directories, directories[i]);
         if (duplicate != -1 && duplicate < i)
             continue;
 
-        directory = opendir(directories[i]);
-
-        if (directory == NULL)
-        {
-            printf("\nError opening directory %s: %s\n", directories[i], strerror(errno));
-            continue;
-        }
-
-        printf("\nDirectory %s\n", directories[i]);
-
-        while ((element = readdir(directory)) != NULL)
-        {
-            if (cmp_extensions(element->d_name, extensions) != 0) /* file's extension doesn't match */
-                continue;
-
-            int lines;
-            char path[DIR_LENGTH + BASE_LENGTH + EXT_LENGTH];
-
-            sprintf(path, "%s/%s", directories[i], element->d_name); /* merge directory path and whole file name */
-            lines = count_lines(path);
-
-            if (lines == -1) /* could not get lines */
-                continue;
-
-            printf("- %s: %d\n", element->d_name, lines);
-            total_lines += lines;
-        }
+        total_lines += count_directory(directories[i], extensions, recursive);
     }
 
     printf("\nTotal lines of code: %ld\n", total_lines);
