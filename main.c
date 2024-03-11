@@ -27,6 +27,7 @@
 
 #define EXT_PREFIX 'e'
 #define DIR_PREFIX 'd'
+#define REC_PREFIX 'r'
 
 #define EXT_LENGTH 8
 #define DIR_LENGTH 256
@@ -41,15 +42,15 @@
 int main(int   argc,
          char *argv[])
 {
-    unsigned long int total_lines = 0;
+    unsigned long long int total_lines = 0;
     int recursive = 0;
 
-    if (arg_type(argv, 'r') > 0)
+    if (arg_type(argv, REC_PREFIX) > 0)
         recursive = 1;
 
     /* Dynamic assigning of arrays of strings */
-    int e_arguments = arg_type(argv, 'e');
-    int d_arguments = arg_type(argv, 'd');
+    int e_arguments = arg_type(argv, EXT_PREFIX);
+    int d_arguments = arg_type(argv, DIR_PREFIX);
 
     char **extensions;
     extensions = malloc(e_arguments * sizeof(char *)); /* allocate space for e_arguments char* pointers*/
@@ -60,10 +61,10 @@ int main(int   argc,
     directories = malloc(d_arguments * sizeof(char *));
     for (int i = 0; i < d_arguments; i++)
         directories[i] = malloc(DIR_LENGTH + 1);
+    
 
-
-    int counter_exts = 0;
-    int counter_dirs = 0;
+    int counter_e = 0;
+    int counter_d = 0;
     for (int i = 1; i < argc; i++)
     {
         char *value_buffer;
@@ -76,12 +77,12 @@ int main(int   argc,
         switch (argv[i][1])
         {
         case EXT_PREFIX:
-            strcpy(extensions[counter_exts], value_buffer);
-            counter_exts++;
+            strcpy(extensions[counter_e], value_buffer);
+            counter_e++;
             break;
         case DIR_PREFIX:
-            realpath(value_buffer, directories[counter_dirs]);
-            counter_dirs++;
+            realpath(value_buffer, directories[counter_d]);
+            counter_d++;
             break;
         }
 
@@ -106,6 +107,6 @@ int main(int   argc,
         total_lines += count_directory(directories[i], extensions, recursive);
     }
 
-    printf("\nTotal lines of code: %ld\n", total_lines);
+    printf("\nTotal lines of code: %lld\n", total_lines);
     return (0);
 }

@@ -35,7 +35,7 @@
  * @return: size of the given file
  */
 
-long int file_size(char *path)
+unsigned long int file_size(char *path)
 {
     long int size;
 
@@ -63,7 +63,7 @@ long int file_size(char *path)
  * @return: line count of the given file
  */
 
-int count_lines(char *path)
+unsigned int count_lines(char *path)
 {
     int lines = 0;
 
@@ -92,16 +92,17 @@ int count_lines(char *path)
  *
  * @arg1: Path of directory
  * @arg2: Array of extensions for files that should match
- * @arg3: Recursive: 0/1
+ * @arg3: Recursive: 0 No
+ *                   1 Yes
  *
  * @return: Total lines in directory
  */
 
-long int count_directory(char  *path,
-                         char **extensions,
-                         int    recursive)
+unsigned long long int count_directory(char  *path,
+                                       char **extensions,
+                                       int    recursive)
 {
-    long int total_lines = 0;
+    unsigned long long int total_lines = 0;
 
     DIR *directory;
     struct dirent *element;
@@ -114,10 +115,10 @@ long int count_directory(char  *path,
         return (0);
     }
 
-    long int directory_lines = 0;
+    unsigned long int directory_lines = 0;
 
     char line_buffer[PATH_MAX + 1024];
-    char list_buffer[65536];
+    char list_buffer[sizeof(line_buffer) * 10]; /* MAX: 1024 files per directory */
 
     while ((element = readdir(directory)) != NULL)
     {
@@ -136,7 +137,7 @@ long int count_directory(char  *path,
             continue;
 
 
-        int lines = 0;
+        unsigned int lines = 0;
         char file_path[PATH_MAX];
         sprintf(file_path, "%s/%s", path, element->d_name); /* merge directory path and whole file name */
         lines = count_lines(file_path);
@@ -149,8 +150,10 @@ long int count_directory(char  *path,
          * -> Not using a single sprintf line to prevent buffer overflows
          */
         snprintf(line_buffer, sizeof(line_buffer), "- %s: %d lines\n", element->d_name, lines);
-        strncat(list_buffer, line_buffer, sizeof(list_buffer) - 1); 
+        strncat(list_buffer, line_buffer, sizeof(list_buffer) - 1);
     }
+
+    closedir(directory);
 
     if (directory_lines > 0)
     {

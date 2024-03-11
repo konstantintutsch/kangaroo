@@ -1,8 +1,8 @@
 #ifndef FILES_H
 #define FILES_H
 
-long int file_size(char *path);
-int count_lines(char *path);
-long int count_directory(char *path, char **extensions, int recursive);
+unsigned long int file_size(char *path);
+unsigned int count_lines(char *path);
+unsigned long long int count_directory(char *path, char **extensions, int recursive);
 
 #endif

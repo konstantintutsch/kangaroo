@@ -13,14 +13,14 @@ File extensions: .c .h
 
 - parse.h: 8 lines
 - compare.h: 7 lines
-- files.h: 8 lines
-- main.c: 111 lines
 - compare.c: 81 lines
 - parse.c: 91 lines
-- files.c: 162 lines
-(All files @ /home/konstantin/Code/kangaroo: 468 lines)
+- files.c: 165 lines
+- files.h: 8 lines
+- main.c: 112 lines
+(All files @ /home/konstantin/Code/kangaroo: 472 lines)
 
-Total lines of code: 468
+Total lines of code: 472
 ```
 
 ## Usage
