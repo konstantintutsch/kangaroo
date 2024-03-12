@@ -16,10 +16,7 @@
 
 #include "parse.h"
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-
 
 /**
  * array_elements - Counts how many elements exist in an array of pointers to strings
@@ -37,55 +34,4 @@ int array_elements(char **array)
         count++;
 
     return (count);
-}
-
-/**
- * arg_value - Filter out the value from a command line argument
- *             e. g. `-d./src` -> `./src`
- *
- * @arg1: command line argument
- *
- * @return: value of the argument
- */
-
-char *arg_value(char *argument)
-{
-    /* Arguments should always start with a dash */
-    if (argument[0] != '-')
-    {
-        printf("Missing dash. Not an argument: %s\n", argument);
-        return (NULL);
-    }
-
-    char *value = malloc(strlen(argument));
-
-    /* Write string to value, skip first two characters */
-    memcpy(value, argument + 2, strlen(argument));
-    /* End string */
-    value[strlen(argument)] = 0;
-
-    return (value);
-}
-
-/**
- * arg_type - Count how many arguments of a given type exist
- *
- * @arg1: arguments
- * @arg2: type, e. g. d,e
- *
- * @return: Count of arguments
- */
-
-int arg_type(char **arguments,
-             char   type)
-{
-    int amount = 0;
-
-    for (int i = 0; i < array_elements(arguments); i++)
-    {
-        if (arguments[i][1] == type)
-            amount++;
-    }
-
-    return amount;
 }

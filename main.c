@@ -14,7 +14,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -23,7 +22,7 @@
 #include "files.h"
 #include "parse.h"
 #include "compare.h"
-
+#include "cli.h"
 
 #define EXT_PREFIX 'e'
 #define DIR_PREFIX 'd'
@@ -31,7 +30,6 @@
 
 #define EXT_LENGTH 8
 #define DIR_LENGTH 256
-
 
 /**
  * main - Entry point of code
