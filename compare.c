@@ -22,7 +22,6 @@
 
 #include "parse.h"
 
-
 /**
  * cmp_extensions - Checks if string ends with string from array of strings
  * 

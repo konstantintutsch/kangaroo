@@ -18,15 +18,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <limits.h>
+#include <zarg.h>
 
 #include "files.h"
 #include "parse.h"
 #include "compare.h"
-#include "cli.h"
-
-#define EXT_PREFIX 'e'
-#define DIR_PREFIX 'd'
-#define REC_PREFIX 'r'
 
 #define EXT_LENGTH 8
 #define DIR_LENGTH 256
@@ -40,62 +37,44 @@
 int main(int   argc,
          char *argv[])
 {
-    unsigned long long int total_lines = 0;
+    /* List of available arguments */
+    Flag ext = {"extension", 'e', 's', "File extension to scan lines of code"};
+    Flag dir = {"directory", 'd', 's', "Directories to scan through"};
+    Flag rec = {"recursion", 'r', 'b', "Recursion for scanning directories"};
+
     int recursive = 0;
 
-    if (arg_type(argv, REC_PREFIX) > 0)
+    int e_arguments = argument_count(argv, &ext);
+    int d_arguments = argument_count(argv, &dir);
+
+    char **extensions = malloc(e_arguments * sizeof(char *));
+    char **directories = malloc(d_arguments * sizeof(char *));
+
+    unsigned long long int total_lines = 0;
+
+    /* Analyze arguments */
+    if (argument_count(argv, &rec) > 0)
         recursive = 1;
+    extensions = (char **)argument_value(argv, &ext);
+    directories = (char **)argument_value(argv, &dir);
 
-    /* Dynamic assigning of arrays of strings */
-    int e_arguments = arg_type(argv, EXT_PREFIX);
-    int d_arguments = arg_type(argv, DIR_PREFIX);
-
-    char **extensions;
-    extensions = malloc(e_arguments * sizeof(char *)); /* allocate space for e_arguments char* pointers*/
-    for (int i = 0; i < e_arguments; i++)
-        extensions[i] = malloc(EXT_LENGTH + 1); /* allocate space for EXT_LENGTH + '\0' */
-
-    char **directories;
-    directories = malloc(d_arguments * sizeof(char *));
+    /* Convert path from arguments to absolute to avoid duplication */
     for (int i = 0; i < d_arguments; i++)
-        directories[i] = malloc(DIR_LENGTH + 1);
-    
-
-    int counter_e = 0;
-    int counter_d = 0;
-    for (int i = 1; i < argc; i++)
     {
-        char *value_buffer;
+        char buffer[PATH_MAX];
+        realpath(directories[i], buffer);
 
-        value_buffer = arg_value(argv[i]);
-        value_buffer[strlen(value_buffer) + 1] = '\0';
-        if (value_buffer == NULL)
-            continue;
-
-        switch (argv[i][1])
-        {
-        case EXT_PREFIX:
-            strcpy(extensions[counter_e], value_buffer);
-            counter_e++;
-            break;
-        case DIR_PREFIX:
-            realpath(value_buffer, directories[counter_d]);
-            counter_d++;
-            break;
-        }
-
-        free(value_buffer); /* free local variable from function arg_value() */
+        directories[i] = malloc(PATH_MAX * sizeof(char));
+        strcpy(directories[i], buffer);
     }
-
 
     /* List all recognized file types */
     printf("File extensions:");
-
     for (int i = 0; i < e_arguments; i++)
         printf(" %s", extensions[i]);
-
     printf("\n");
 
+    /* Count lines */
     for (int i = 0; i < d_arguments; i++)
     {
         int duplicate = deduplicate(directories, directories[i]);
