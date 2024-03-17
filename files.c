@@ -117,8 +117,8 @@ unsigned long long int count_directory(char  *path,
 
     unsigned long int directory_lines = 0;
 
-    char line_buffer[PATH_MAX + 1024];
-    char list_buffer[sizeof(line_buffer) * 10]; /* MAX: 1024 files per directory */
+    char line_buffer[PATH_MAX + 1024] = {'\0'};
+    char list_buffer[sizeof(line_buffer) * 10] = {'\0'}; /* MAX: 1024 files per directory */
 
     while ((element = readdir(directory)) != NULL)
     {
