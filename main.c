@@ -22,7 +22,6 @@
 #include <zarg.h>
 
 #include "files.h"
-#include "parse.h"
 #include "compare.h"
 
 #define EXT_LENGTH 8

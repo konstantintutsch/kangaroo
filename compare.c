@@ -19,8 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "parse.h"
+#include <zarg.h>
 
 /**
  * cmp_extensions - Checks if string ends with string from array of strings
@@ -34,7 +33,7 @@
 int cmp_extensions(char  *file_name,
                    char **extensions)
 {
-    for (int i = 0; i < array_elements(extensions); i++)
+    for (int i = 0; i < ppclen(extensions); i++)
     {
         if (strncmp(file_name + strlen(file_name) - strlen(extensions[i]), /* End of file_name minus extension length -> extension as string */
                      extensions[i], /* Compare to actual extension */
@@ -63,7 +62,7 @@ int deduplicate(char **array,
     int first = -1;
     int count = 0;
 
-    for (int i = 0; i < array_elements(array); i++)
+    for (int i = 0; i < ppclen(array); i++)
     {
         if (strcmp(array[i], match) != 0)
             continue;
