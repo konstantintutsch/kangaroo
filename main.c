@@ -39,7 +39,7 @@ int main(int   argc,
     /* List of available arguments */
     Flag ext = {"extension", 'e', 's', "File extension to scan lines of code"};
     Flag dir = {"directory", 'd', 's', "Directories to scan through"};
-    Flag rec = {"recursion", 'r', 'b', "Recursion for scanning directories"};
+    Flag rec = {"recursive", 'r', 'b', "Recursion for scanning directories"};
 
     int recursive = 0;
 
