@@ -41,12 +41,14 @@ int main(int   argc,
     Flag dir = {"directory", 'd', 1, "Directories to scan through"};
     Flag rec = {"recursive", 'r', 0, "Recursion for scanning directories"};
     Flag ign = {"ignore",    'i', 1, "Exclude a directory from being scanned"};
+    if (zinit(argv, (Flag[]){ext, dir, rec, ign}, 4))
+        return 0;
 
     int recursive = 0;
 
-    int e_arguments = flag_count(argv, &ext);
-    int d_arguments = flag_count(argv, &dir);
-    int i_arguments = flag_count(argv, &ign);
+    int e_arguments = flag_count(argv, ext);
+    int d_arguments = flag_count(argv, dir);
+    int i_arguments = flag_count(argv, ign);
 
     char **extensions = malloc(e_arguments * sizeof(char *));
     char **directories = malloc(d_arguments * sizeof(char *));
@@ -55,11 +57,11 @@ int main(int   argc,
     unsigned long long int total_lines = 0;
 
     /* Analyze arguments */
-    if (flag_count(argv, &rec) > 0)
+    if (flag_count(argv, rec) > 0)
         recursive = 1;
-    extensions = flag_value(argv, &ext);
-    directories = flag_value(argv, &dir);
-    ignores = flag_value(argv, &ign);
+    extensions = flag_value(argv, ext);
+    directories = flag_value(argv, dir);
+    ignores = flag_value(argv, ign);
 
     /* Convert path from arguments to absolute to avoid duplication */
     directories = convert_absolute(directories);
