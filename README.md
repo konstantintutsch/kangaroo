@@ -27,7 +27,7 @@ Total lines of code: 375
 
 - make (*v4.4+*)
 - gcc (*v13.2+*)
-- [libzarg](https://github.com/konstantintutsch/zarg) (*v0.0.1*)
+- [libzarg](https://github.com/konstantintutsch/zarg) (*v0.0.2*)
 
 ### Compile
 
