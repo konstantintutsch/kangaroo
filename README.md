@@ -21,6 +21,24 @@ File extensions: .c .h
 Total lines of code: 375
 ```
 
+## Installation
+
+### Prerequisites
+
+- make (*v4.4+*)
+- gcc (*v13.2+*)
+- [libzarg](https://github.com/konstantintutsch/zarg) (*v0.0.1*)
+
+### Compile
+
+Compile kangaroo with `make`:
+
+```
+make build
+```
+
+The kangaroo binary is located at `./kangaroo` by default. You can move it to `~/.local/bin` if you'd like.
+
 ## Usage
 
 | Argument                | Description                                                                                         | Type   |
