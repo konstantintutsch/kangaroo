@@ -40,14 +40,17 @@ int main(int   argc,
     Flag ext = {"extension", 'e', 's', "File extension to scan lines of code"};
     Flag dir = {"directory", 'd', 's', "Directories to scan through"};
     Flag rec = {"recursive", 'r', 'b', "Recursion for scanning directories"};
+    Flag ign = {"ignore",    'i', 's', "Exclude a directory from being scanned"};
 
     int recursive = 0;
 
     int e_arguments = argument_count(argv, &ext);
     int d_arguments = argument_count(argv, &dir);
+    int i_arguments = argument_count(argv, &ign);
 
     char **extensions = malloc(e_arguments * sizeof(char *));
     char **directories = malloc(d_arguments * sizeof(char *));
+    char **ignores = malloc(i_arguments * sizeof(char *));
 
     unsigned long long int total_lines = 0;
 
@@ -56,16 +59,11 @@ int main(int   argc,
         recursive = 1;
     extensions = (char **)argument_value(argv, &ext);
     directories = (char **)argument_value(argv, &dir);
+    ignores = (char **)argument_value(argv, &ign);
 
     /* Convert path from arguments to absolute to avoid duplication */
-    for (int i = 0; i < d_arguments; i++)
-    {
-        char buffer[PATH_MAX];
-        realpath(directories[i], buffer);
-
-        directories[i] = malloc(PATH_MAX * sizeof(char));
-        strcpy(directories[i], buffer);
-    }
+    directories = convert_absolute(directories);
+    ignores = convert_absolute(ignores);
 
     /* List all recognized file types */
     printf("File extensions:");
@@ -80,7 +78,7 @@ int main(int   argc,
         if (duplicate != -1 && duplicate < i)
             continue;
 
-        total_lines += count_directory(directories[i], extensions, recursive);
+        total_lines += count_directory(directories[i], extensions, ignores, recursive);
     }
 
     printf("\nTotal lines of code: %lld\n", total_lines);

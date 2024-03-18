@@ -23,6 +23,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <limits.h>
+#include <zarg.h>
 
 #include "compare.h"
 
@@ -100,8 +101,15 @@ unsigned int count_lines(char *path)
 
 unsigned long long int count_directory(char  *path,
                                        char **extensions,
+                                       char **ignores,
                                        int    recursive)
 {
+    for (int i = 0; i < ppclen(ignores); i++)
+    {
+        if (strcmp(path, ignores[i]) == 0)
+            return 0;
+    }
+
     unsigned long long int total_lines = 0;
 
     DIR *directory;
@@ -129,7 +137,7 @@ unsigned long long int count_directory(char  *path,
         {
             char access_path[PATH_MAX];
             sprintf(access_path, "%s/%s", path, element->d_name);
-            total_lines += count_directory(access_path, extensions, recursive);
+            total_lines += count_directory(access_path, extensions, ignores, recursive);
             continue;
         }
         
@@ -162,4 +170,25 @@ unsigned long long int count_directory(char  *path,
     }
 
     return (total_lines);
+}
+
+/**
+ * convert_absolute - Convert an array of relative paths to absolute paths
+ *
+ * @arg1: relative paths
+ *
+ * @return: absolute paths
+ */
+char **convert_absolute(char **relative)
+{
+    int length = ppclen(relative);
+    char **absolute = malloc(sizeof(relative));
+
+    for (int i = 0; i < length; i++)
+    {
+        absolute[i] = malloc(PATH_MAX * sizeof(char));
+        realpath(relative[i], absolute[i]);
+    }
+
+    return absolute;
 }
